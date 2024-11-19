@@ -7,8 +7,8 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-latest]
-        go-version: [ '1.21' ]
+        platform: [windows-latest]
+        go-version: ['1.21']
     name: Build
     runs-on: ${{ matrix.platform }}
     steps:
@@ -23,18 +23,40 @@ jobs:
       - uses: benjlevesque/short-sha@v3.0
         id: short-sha
 
+      - name: Set SHA environment variable
+        run: echo "SHA=${{ steps.short-sha.outputs.sha }}" >> $GITHUB_ENV
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Install dependencies
         run: |
-          sudo snap install zig --classic --beta
-          docker pull crazymax/xgo:latest
-          go install github.com/crazy-max/xgo@latest
-          sudo apt install upx
+          # Windows 环境下可能没有直接的命令来安装依赖
+          # 如果你需要 Docker 和 UPX，可以考虑先在 Windows 上安装它们
+          
+          # Example: Install Docker for Windows (you may need to ensure Docker Desktop is running)
+          choco install docker-desktop
+
+          # UPX 需要通过下载并安装，或者通过 Chocolatey 安装
+          choco install upx
+
+          # 如果 Zig 是必需的，可以尝试手动下载并安装
+          # 例如：
+          Invoke-WebRequest -Uri https://github.com/ziglang/zig/releases/download/0.11.0/zig-windows-x86_64-0.11.0.zip -OutFile zig.zip
+          Expand-Archive -Path zig.zip -DestinationPath $HOME\zig
+
       - name: Build
         run: |
           bash build.sh dev
-          ls -al dist
+          dir dist
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: alist_${{ env.SHA }}
-          path: dist/alist-linux-musl-amd64
+          path: dist/alist-windows-amd64
