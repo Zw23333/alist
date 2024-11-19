@@ -1,6 +1,6 @@
 module github.com/alist-org/alist/v3
 
-go 1.22.4
+go 1.22
 
 require (
 	github.com/SheltonZhu/115driver v1.0.29
