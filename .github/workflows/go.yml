@@ -17,6 +17,9 @@ jobs:
         with:
           go-version: '1.22.4'  # 使用合适的 Go 版本
 
+      - name: Install FUSE library
+        run: sudo apt-get install -y libfuse-dev  # 安装 FUSE 库
+
       - name: Go mod tidy
         run: go mod tidy  # 清理并更新 go.mod
 
